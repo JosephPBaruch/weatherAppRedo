@@ -2,7 +2,7 @@ import React from 'react'
 import {render} from 'react-dom'
 import injectSheet, { ThemeProvider } from 'react-jss'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const styles = (theme) => ({
   center: {
@@ -27,24 +27,20 @@ const styles = (theme) => ({
 
 function Comp({classes}){
 
-    const navigate = useNavigate();
-
-    const [ invest, setInvest ] = useState({
-        value: "What do you want to invest in?"
-    })
+    //const navigate = useNavigate();
+    let location = useLocation();
+    let address = location.state;
 
     const handleClick = () => {
-       navigate('/display');
+       //navigate('/display');
+       console.log(address)
     };
 
     return (
         <div className={classes.center}>
             <h1>Hot Stock</h1>
-            <div id="center" className={classes.link}>
-                <input id="jeff" style={{height: "100%", width: "300px"}} value ={invest.value} onChange={setInvest} ></input> 
-                <p id="p" >hola</p>
+
                <button id="butt" onClick={handleClick}>Go</button> 
-            </div>
             <footer><p>By Joseph Baruch</p></footer>
         </div>
     )

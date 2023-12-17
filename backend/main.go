@@ -4,6 +4,9 @@ import (
 	"log"
 	"encoding/json"
 	"net/http"
+	"fmt"
+	//"os"
+	"github.com/joho/godotenv"
 )
 
 type RequestBody struct {
@@ -15,13 +18,33 @@ type RequestBody struct {
 	Zipcode string
 }
 
+func init() {
+
+    err := godotenv.Load(".env")
+
+    if err != nil {
+        log.Fatal("Error loading .env file")
+    }
+}
+
 func main() {
+	var envs map[string]string;
+	envs, err := godotenv.Read(".env")
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+
+
+
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		var body RequestBody
 		err := json.NewDecoder(req.Body).Decode(&body)
 		if err != nil {
 			log.Println("Ayo, error")
 		}
+		fmt.Printf(envs["PORT"])
 		
 		json, err := json.Marshal(body)
 		if err != nil {
@@ -38,3 +61,5 @@ func main() {
 	log.Println("Server is available at http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
+
+

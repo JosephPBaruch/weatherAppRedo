@@ -89,21 +89,20 @@ function Comp({classes}){
         Zipcode: address.zipcode,
     }
 
-    const handleClick = () => {
-        fetch('http://localhost:8000/', {
+    const handleClick = async () => {
+        let values = await fetch('http://localhost:8000/', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(addressPackage)
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
+            return data;
         })
         .catch((error) => {
             console.error('Error:', error);
         });
-
-        //navigate()    
+        navigate('/display', { state: {values} });    
     };
 
     return (
