@@ -4,12 +4,7 @@ import injectSheet, { ThemeProvider } from 'react-jss'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const styles = (theme) => ({
-  center: {
-    position: 'absolute', left: '50%', top: '50%',
-        transform: 'translate(-50%, -50%)', 
-        textAlign: 'center'
-  },
+const styles = (theme) => ({    
   title: {
     font: {
       size: 40,
@@ -22,71 +17,57 @@ const styles = (theme) => ({
     '&:hover': {
       opacity: 0.5
     }
+
+  },
+  top: {
+    width: "100%", 
+    height: "10%", 
+    align: "top",
+    left: "0", 
+    justifyContent: "center", 
+    top: "0", 
+    position: "fixed", 
+    padding: "0", 
+    margin: "20px 0 20px 0"
+
+  }, 
+  input: {
+    width: "50px", 
+    left: "0", 
+    margin: "10px 0 0 0 "
   }
 })
 
-function Comp({classes}){
+function Input({classes}){
     const navigate = useNavigate();
 
-    const [ address, setAddress ] = useState({
-        number: "14126", 
-        street: "Rainy", 
-        type: "Way", 
-        city: "Boise", 
-        state: "Idaho", 
-        zipcode: "83714",
+    const [ state, setState ] = useState({
+        open: true,
+        number: "", 
+        street: "", 
+        type: "", 
+        city: "", 
+        state: "", 
+        zipcode: "",
+        result: null, 
     })
 
-    const handleNumChange = (event) => {
-        setAddress({
-            ...address, 
-            number: event.target.value,
-
+    const inputChange = (args) => {
+        setState({
+            ...state, 
+            ...args, 
+            Result: null,
         });
     }
-    const handleStreetChange = (event) => {
-        setAddress({
-            ...address, 
-            street: event.target.value,
-
-        });
-    }
-    const handleTypeChange = (event) => {
-        setAddress({
-            ...address, 
-            type: event.target.value,
-
-        });
-    }
-    const handleCityChange = (event) => {
-        setAddress({
-            ...address, 
-            city: event.target.value,
-
-        });
-    }
-    const handleStateChange = (event) => {
-        setAddress({
-            ...address, 
-            state: event.target.value,
-
-        });
-    }
-    const handleZipChange = (event) => {
-        setAddress({
-            ...address, 
-            zipcode: event.target.value,
-
-        });
-    }
+    
 
     const addressPackage = {
-        Number:  address.number,
-        Street:  address.street, 
-        Type:    address.type,
-        City:    address.city,
-        State:   address.state,
-        Zipcode: address.zipcode,
+        Number:  state.number,
+        Street:  state.street, 
+        Type:    state.type,
+        City:    state.city,
+        State:   state.state,
+        Zipcode: state.zipcode,
     }
 
     const handleClick = async () => {
@@ -105,19 +86,69 @@ function Comp({classes}){
         navigate('/display', { state: {values} });    
     };
 
+    const input = [
+        {
+            key: "1",
+            type: "number",
+        },
+        {
+            key: "2",
+            type: "street",
+        },
+        {
+            key: "3",
+            type: "type",
+        },
+        {
+            key: "4",
+            type: "city",
+        },
+        {
+            key: "5",
+            type: "state",
+        },
+        {
+            key: "6",
+            type: "zipcode",
+        } 
+    ]
+
     return (
-        <div className={classes.center}>
-            <h1>We Weather</h1>
-            <div id="center" className={classes.link}>
-                <input id="jeff" style={{height: "100%", width: "100px"}} value={address.number} onChange={handleNumChange} ></input>
-                <input id="jeff" style={{height: "100%", width: "100px"}} value={address.street} onChange={handleStreetChange} ></input>
-                <input id="jeff" style={{height: "100%", width: "100px"}} value={address.type} onChange={handleTypeChange} ></input>
-                <input id="jeff" style={{height: "100%", width: "100px"}} value={address.city} onChange={handleCityChange} ></input>
-                <input id="jeff" style={{height: "100%", width: "100px"}} value={address.state} onChange={handleStateChange} ></input>
-                <input id="jeff" style={{height: "100%", width: "100px"}} value={address.zipcode} onChange={handleZipChange} ></input>
+        <div style={{ margin: 0}}>
+            <div className={classes.input}>
+                {input.map((value) => (
+                    <input key={value.key} placeholder={value.type} value={state[value.type]} onChange={() => inputChange({[value.type]: event.target.value})} />
+                ))
+
+                }
                 <button id="butt" onClick={handleClick}>Go</button> 
             </div>
-            <footer><p>By Joseph Baruch</p></footer>
+           
+        </div>
+    )
+}
+
+const StyledInput = injectSheet(styles)(Input)
+
+function Comp({classes}){
+
+    const [state, setState] = useState(true);
+
+    const collChange = (args) => {
+        setState({
+            ...state, 
+            ...args, 
+        });
+    }
+
+    return (
+        <div style={{margin: 0}}>
+            <div className={classes.top} > 
+                <h1>We Weather</h1>
+            </div>
+            <button onClick={() => collChange({open: !state.open})}> Collapse </button>
+            { !state.open && <StyledInput style={{margin: "10px"}}/> }
+            
         </div>
     )
 }
@@ -128,9 +159,9 @@ const theme = {
 }
 
 const Home = () => (
-  <ThemeProvider theme={theme}>
+  <ThemeProvider theme={theme} >
     <StyledComp color="blue"/>
   </ThemeProvider>
 )
 
-export default Home
+export default Home;
