@@ -1,8 +1,9 @@
 import React from 'react'
 import {render} from 'react-dom'
 import injectSheet, { ThemeProvider } from 'react-jss'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import StyledInput  from './inputs'
 
 const styles = (theme) => ({    
   title: {
@@ -17,118 +18,52 @@ const styles = (theme) => ({
     '&:hover': {
       opacity: 0.5
     }
-
   },
   top: {
-    width: "100%", 
-    height: "10%", 
+    width: 400, 
+    height: "100px", 
     align: "top",
     left: "0", 
     justifyContent: "center", 
     top: "0", 
-    position: "fixed", 
-    padding: "0", 
-    margin: "20px 0 20px 0"
-
+    //position: "fixed",
+    margin: "20px", 
+    display: "block"
   }, 
   input: {
-    width: "50px", 
+    width: "200px", 
     left: "0", 
-    margin: "10px 0 0 0 "
+    margin: "10px", 
+    padding: "0", 
+    border: "solid black 2px", 
+    height: "700px" ,
+    width: "250px", 
+    bottom: "0",
+    display: "block"
+  }, 
+  collapse: {
+    position: "fixed",
+    bottom: "0", 
+    width: "80px", 
+    height: "40px", 
+    margin: "10px", 
+    fontSize: "10px", 
+    left: "0"
+  }, 
+  go: {
+    height: '20px', 
+    width: '150px', 
+    margin: "10px", 
+    fontSize: "10px", 
+    text: "flex"
+  }, 
+  inputBox: {
+    width: '150px', 
+    height: '20px',
+    margin: '10px'
+
   }
 })
-
-function Input({classes}){
-    const navigate = useNavigate();
-
-    const [ state, setState ] = useState({
-        open: true,
-        number: "", 
-        street: "", 
-        type: "", 
-        city: "", 
-        state: "", 
-        zipcode: "",
-        result: null, 
-    })
-
-    const inputChange = (args) => {
-        setState({
-            ...state, 
-            ...args, 
-            Result: null,
-        });
-    }
-    
-
-    const addressPackage = {
-        Number:  state.number,
-        Street:  state.street, 
-        Type:    state.type,
-        City:    state.city,
-        State:   state.state,
-        Zipcode: state.zipcode,
-    }
-
-    const handleClick = async () => {
-        let values = await fetch('http://localhost:8000/', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(addressPackage)
-        })
-        .then(response => response.json())
-        .then(data => {
-            return data;
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-        navigate('/display', { state: {values} });    
-    };
-
-    const input = [
-        {
-            key: "1",
-            type: "number",
-        },
-        {
-            key: "2",
-            type: "street",
-        },
-        {
-            key: "3",
-            type: "type",
-        },
-        {
-            key: "4",
-            type: "city",
-        },
-        {
-            key: "5",
-            type: "state",
-        },
-        {
-            key: "6",
-            type: "zipcode",
-        } 
-    ]
-
-    return (
-        <div style={{ margin: 0}}>
-            <div className={classes.input}>
-                {input.map((value) => (
-                    <input key={value.key} placeholder={value.type} value={state[value.type]} onChange={() => inputChange({[value.type]: event.target.value})} />
-                ))
-
-                }
-                <button id="butt" onClick={handleClick}>Go</button> 
-            </div>
-           
-        </div>
-    )
-}
-
-const StyledInput = injectSheet(styles)(Input)
 
 function Comp({classes}){
 
@@ -139,19 +74,40 @@ function Comp({classes}){
             ...state, 
             ...args, 
         });
-    }
 
+        
+    }
+    const [windowSize, setWindowSize] = useState([
+        window.innerWidth,
+        window.innerHeight,
+      ]);
+    
+      useEffect(() => {
+        const handleWindowResize = () => {
+          setWindowSize([window.innerWidth, window.innerHeight]);
+        };
+    
+        window.addEventListener('resize', handleWindowResize);
+    
+        return () => {
+          window.removeEventListener('resize', handleWindowResize);
+        };
+      }, []);
+//
     return (
-        <div style={{margin: 0}}>
-            <div className={classes.top} > 
+        <div>
+            <div className={classes.top} style={{width: `${windowSize[0]}px`, height: `${windowSize[1] * .1 }px` }} > 
                 <h1>We Weather</h1>
             </div>
-            <button onClick={() => collChange({open: !state.open})}> Collapse </button>
-            { !state.open && <StyledInput style={{margin: "10px"}}/> }
+            <div className={classes.inputSection}  >
+                <button className={classes.collapse}onClick={() => collChange({open: !state.open})}> Collapse </button>
+                {!state.open && <StyledInput style={{margin: "10px"}}/> }
+            </div>
             
         </div>
     )
 }
+
 const StyledComp = injectSheet(styles)(Comp)
 const theme = {
   background: '#aaa',
