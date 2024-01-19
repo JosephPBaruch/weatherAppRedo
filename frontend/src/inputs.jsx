@@ -1,53 +1,35 @@
 import React from 'react'
-import {render} from 'react-dom'
-import injectSheet, { ThemeProvider } from 'react-jss'
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import injectSheet from 'react-jss'
+import { useState, useEffect } from 'react'
 
-const styles = (theme) => ({    
-  title: {
-    font: {
-      size: 40,
-      weight: 900,
-    },
-    color: props => props.color
-  },
-  link: {
-    color: theme.color,
-    '&:hover': {
-      opacity: 0.5
-    }
-  },
-  top: {
-    width: 400, 
-    height: "100px", 
-    align: "top",
-    left: "0", 
-    justifyContent: "center", 
-    top: "0", 
-    //position: "fixed",
-    margin: "20px", 
-    display: "block"
-  }, 
+const styles = () => ({    
   input: {
-    width: "200px", 
     left: "0", 
-    margin: "10px", 
-    padding: "0", 
-    border: "solid black 2px", 
-    height: "700px" ,
+    borderRight: "solid black 2px", 
+    borderTop: "solid black 2px", 
     width: "250px", 
     bottom: "0",
-    display: "block"
+    justifyContent: "center", 
+    flexDirection: "column"
   }, 
+  close: {
+    width: "50px", 
+    left: "0", 
+    borderRight: "solid black 2px", 
+    borderTop: "solid black 2px", 
+    bottom: "0",
+    justifyContent: "center", 
+    flexDirection: "column"
+  },
   collapse: {
     position: "fixed",
     bottom: "0", 
-    width: "80px", 
-    height: "40px", 
-    margin: "10px", 
+    width: "20px", 
+    height: "30px", 
+    margin: "20px", 
     fontSize: "10px", 
-    left: "0"
+    left: "0", 
+    alignText: "center"
   }, 
   go: {
     height: '20px', 
@@ -57,34 +39,21 @@ const styles = (theme) => ({
     text: "flex"
   }, 
   inputBox: {
-    width: '150px', 
+    width: '200px', 
     height: '20px',
-    margin: '10px'
-
+    margin: '10px', 
+    align: "center", 
+    float: "center"
   }
 })
 
 function Input({classes}){
-    const navigate = useNavigate();
 
     const [windowSize, setWindowSize] = useState([
         window.innerWidth,
         window.innerHeight,
-      ]);
-      
-    
-      useEffect(() => {
-        const handleWindowResize = () => {
-          setWindowSize([window.innerWidth, window.innerHeight]);
-        };
-    
-        window.addEventListener('resize', handleWindowResize);
-    
-        return () => {
-          window.removeEventListener('resize', handleWindowResize);
-        };
-      }, []);
-
+    ]);
+    const [ open, setOpen ] = useState(false);  
     const [ state, setState ] = useState({
         open: true,
         number: "", 
@@ -97,29 +66,27 @@ function Input({classes}){
         result: null, 
         error: false, 
     })
-const [ open, setOpen ] = useState(false);
-    const inputChange = async (args) => {
-        await setState({
+    
+    useEffect(() => {
+    const handleWindowResize = () => {
+        setWindowSize([window.innerWidth, window.innerHeight]);
+    };
+
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+        window.removeEventListener('resize', handleWindowResize);
+    };
+    }, []);
+
+    const inputChange = (args) => {
+        setState({
             ...state, 
             ...args, 
             Result: null,
         });
-        //check()
-
     }
-    const ipv4Pattern =  /^(\d{1,3}\.){3}\d{1,3}$/; 
-    var works = true; 
-   // const check = () => {
-        if( state.number !== "" && !ipv4Pattern.test(state.number) ){
-            works = false;
-            //console.log(state.number)
-        }else{
-            works = true; 
-        }
-    //}
-        
-    
-    
+
     const addressPackage = {
         Number:  state.number,
         Street:  state.street, 
@@ -141,8 +108,7 @@ const [ open, setOpen ] = useState(false);
         })
         .catch((error) => {
             console.error('Error:', error);
-        });
-        //navigate('/display', { state: {values} });    
+        }); 
     };
 
     const input = [
@@ -172,24 +138,22 @@ const [ open, setOpen ] = useState(false);
         } 
     ]
 
-    const collapse = () => {
-        setState({
-            ...state, 
-            open: false,
-        })
-    }
-   // 
     return (
-        <div className={classes.input} style={{height: `${windowSize[1] * .8 }px`}} >
-            <button onClick={() => setOpen(!open)}>Collapse</button>
-            {open && 
-            <div> {input.map((value) => (
-                <input className={classes.inputBox} key={value.key} placeholder={value.type} value={state[value.type]} onChange={() => inputChange({[value.type]: event.target.value})} />
-            ))}
-                        <button className={classes.go} onClick={handleClick} >Go</button> 
-            </div>}
-            { works && <h1>Yeah {}</h1>}
-
+        <div  style={{height: `${windowSize[1] * .8 }px`, margin: "10px"}} >
+            <button className={classes.collapse} onClick={() => setOpen(!open)}>|</button>
+            {open && <div className={classes.close} style={{height: `${windowSize[1] * .8 }px`}}></div>}
+            {!open && 
+                <div className={classes.input} style={{height: `${windowSize[1] * .8 }px`}}> 
+                    {input.map((value) => (
+                        <input 
+                            className={classes.inputBox} 
+                            key={value.key} placeholder={value.type} 
+                            value={state[value.type]} 
+                            onChange={() => inputChange({[value.type]: event.target.value})} 
+                        />
+                    ))}
+                    <button className={classes.go} onClick={handleClick} >Go</button> 
+                </div>}
         </div>
     )
 }
