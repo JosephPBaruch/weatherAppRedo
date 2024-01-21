@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"fmt"
-	//////"os"
-	//"reflect"
 	"github.com/joho/godotenv"
 	"io"
 )
@@ -54,8 +52,7 @@ type RequestBody struct {
 	State   string
 }
 
-
-func geoGet(key string, address RequestBody ) {
+func geoGet(key string, address RequestBody )(float64, float64, error) {
 	resp, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + address.Number + "+" + address.Street + "+" + address.Type + ",+" + address.City + ",+" + address.State + "&key=" + key)
 	if err != nil {
 		log.Fatalln(err)
@@ -66,16 +63,18 @@ func geoGet(key string, address RequestBody ) {
 		log.Fatalln(err)
 	}
 	readable := string(body)
-	//var results []Result
-	//jsonStr := `{"results":[{"address_components":[{"long_name":"318","short_name":"318","types":["street_number"]},{"long_name":"Asbury Street","short_name":"Asbury St","types":["route"]},{"long_name":"Moscow","short_name":"Moscow","types":["locality","political"]},{"long_name":"Latah County","short_name":"Latah County","types":["administrative_area_level_2","political"]},{"long_name":"Idaho","short_name":"ID","types":["administrative_area_level_1","political"]},{"long_name":"United States","short_name":"US","types":["country","political"]},{"long_name":"83843","short_name":"83843","types":["postal_code"]}],"formatted_address":"318 Asbury St, Moscow, ID 83843, USA","geometry":{"location":{"lat":46.7318624,"lng":-117.0051222},"location_type":"RANGE_INTERPOLATED","viewport":{"northeast":{"lat":46.7332103802915,"lng":-117.0039089197085},"southwest":{"lat":46.7305124197085,"lng":-117.0066068802915}}},"place_id":"EiQzMTggQXNidXJ5IFN0LCBNb3Njb3csIElEIDgzODQzLCBVU0EiMRIvChQKEgkpTcRGfyegVBENsU_aJxSmxxC-AioUChIJyb2bS34noFQRAhScD9BheKU","types":["street_address"]}],"status":"OK"}`
 	var geoResp GeoResponse
 	err3 := json.Unmarshal([]byte(readable), &geoResp)
 	if err3 != nil {
 		fmt.Println(err3)
-		return
+		return 0, 0, fmt.Errorf("unexpected error")
 	}
-
-	fmt.Print(geoResp.Results[0].FormattedAddressf)
+	for _, result := range geoResp.Results {
+		lat := result.Geometry.Location.Lat
+		lng := result.Geometry.Location.Lng
+		return lat, lng, nil
+	}
+	return 0, 0, fmt.Errorf("unexpected error")
 }
 
 func init() {
@@ -100,6 +99,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	// get api key from Meteomatics here
 
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		var body RequestBody
@@ -112,9 +112,15 @@ func main() {
 			if err != nil {
 				log.Println("Ayo, error")
 			}
-			geoGet(envs["GEO_KEY"], body)
-
+			lat, lng, err := geoGet(envs["GEO_KEY"], body)
+			if err != nil {
+				log.Fatalf("Error getting coordinates: %v", err)
+			}
+			fmt.Printf("Latitude: %f, Longitude: %f\n", lat, lng)
+			// fetch meteomatics for weather data using the cooridnates
+			// add result to body and return
 		}
+
 		json, err := json.Marshal(body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
