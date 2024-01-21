@@ -5,6 +5,7 @@ import { useState, useEffect} from 'react'
 const styles = (theme) => ({    
     top: {
       align: "top",
+      //textAlign: "center",
       left: "0", 
       justifyContent: "center", 
       top: "0", 
@@ -12,7 +13,12 @@ const styles = (theme) => ({
       display: "block"
     }, 
     topText: {
-      textAlign: "center"
+      textAlign: "center", 
+      margin: 0, 
+    }, 
+    div: {
+        justifyContent: "center", 
+        display: "block"
     }
   })
   
@@ -36,9 +42,9 @@ function Results({classes}){
       }, []);
   
       return (
-          <>
-          <h1 style={{right: "0"}} >hello</h1>
-          </>
+          <div  className={classes.top} style={{width: `${windowSize[0] * .7 }px`}} >
+            <h2 className={classes.topText} style={{margin: 0}}>Results</h2>
+          </div>
       )
   }
   

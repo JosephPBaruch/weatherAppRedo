@@ -10,7 +10,8 @@ const styles = () => ({
     width: "250px", 
     bottom: "0",
     justifyContent: "center", 
-    flexDirection: "column"
+    flexDirection: "column", 
+    alignText: "center"
   }, 
   close: {
     width: "50px", 
@@ -32,11 +33,12 @@ const styles = () => ({
     alignText: "center"
   }, 
   go: {
-    height: '20px', 
+    height: '30px', 
     width: '150px', 
     margin: "10px", 
     fontSize: "10px", 
-    text: "flex"
+    text: "flex", 
+    alignText: "center"
   }, 
   inputBox: {
     width: '200px', 
@@ -93,13 +95,12 @@ function Input({classes}){
         Type:    state.type,
         City:    state.city,
         State:   state.state,
-        Zipcode: state.zipcode,
     }
 
     const handleClick = async () => {
-        let values = await fetch('http://localhost:8000/', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+        let values = await fetch('http://localhost:8000', {
+            method: "PUT",
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(addressPackage)
         })
         .then(response => response.json())
@@ -109,6 +110,7 @@ function Input({classes}){
         .catch((error) => {
             console.error('Error:', error);
         }); 
+        console.log(values)
     };
 
     const input = [
@@ -131,11 +133,7 @@ function Input({classes}){
         {
             key: "5",
             type: "state",
-        },
-        {
-            key: "6",
-            type: "zipcode",
-        } 
+        }
     ]
 
     return (

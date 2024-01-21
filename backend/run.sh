@@ -1,0 +1,1 @@
+nodemon --watch '../backend/*.go' --signal SIGTERM --exec 'go' run ../backend/main.go

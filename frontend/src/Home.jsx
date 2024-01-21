@@ -15,6 +15,10 @@ const styles = (theme) => ({
   }, 
   topText: {
     textAlign: "center"
+  },
+  parent: {
+    display: "flex", 
+    //justifyContent: "space-between"
   }
 })
 
@@ -42,8 +46,10 @@ function Comp({classes}){
             <div className={classes.top} style={{width: `${windowSize[0]}px`, height: `${windowSize[1] * .1 }px` }} > 
                 <h1 className={classes.topText} >We Weather</h1>
             </div>
-            <StyledResults style={{float: "right"}} />
-            <StyledInput /> 
+            <div className={classes.parent} >
+                <StyledInput /> 
+                <StyledResults />
+            </div>
     
         </>
     )
