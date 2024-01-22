@@ -77,6 +77,10 @@ func geoGet(key string, address RequestBody )(float64, float64, error) {
 	return 0, 0, fmt.Errorf("unexpected error")
 }
 
+func meteoGet() {
+	
+}
+
 func init() {
    err := godotenv.Load(".env")
    if err != nil {
