@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"fmt"
+	"encoding/base64"
 	"github.com/joho/godotenv"
 	"io"
+	"io/ioutil"
+	"time"
 )
 
 type AddressComponent struct {
@@ -19,6 +22,37 @@ type Location struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`
 }
+// Coordinates struct to represent the coordinates data
+type Coordinates struct {
+	Lat    float64 `json:"lat"`
+	Lon    float64 `json:"lon"`
+	Dates  []Date  `json:"dates"`
+}
+
+// Date struct to represent the date and value data
+type Date struct {
+	Date  string  `json:"date"`
+	Value float64 `json:"value"`
+}
+
+// Data struct to represent the data array
+type Data struct {
+	Parameter string       `json:"parameter"`
+	Coordinates []Coordinates `json:"coordinates"`
+}
+
+// Response struct to represent the overall JSON structure
+type Response struct {
+	Version        string  `json:"version"`
+	User           string  `json:"user"`
+	DateGenerated  string  `json:"dateGenerated"`
+	Status         string  `json:"status"`
+	Data           []Data  `json:"data"`
+}
+
+type AuthResponse struct {
+	AccessToken string `json:"access_token"`
+}
 
 type Viewport struct {
 	Northeast Location `json:"northeast"`
@@ -30,6 +64,7 @@ type Geometry struct {
 	LocationType string   `json:"location_type"`
 	Viewport     Viewport `json:"viewport"`
 }
+
 
 type Result struct {
 	AddressComponents []AddressComponent `json:"address_components"`
@@ -50,6 +85,51 @@ type RequestBody struct {
 	Type    string
 	City    string
 	State   string
+	Temp    float64
+}
+
+func auth(username string, password string)(string) {
+
+	// URL to make the GET request to
+	url := "https://login.meteomatics.com/api/v1/token"
+
+	// Create a new HTTP client
+	client := &http.Client{}
+
+	// Create a request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return ""
+	}
+
+	// Add basic authentication header
+	auth := username + ":" + password
+	authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+	req.Header.Add("Authorization", "Basic "+authEncoded)
+
+	// Make the request
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return ""
+	}
+	// Parse the response body
+	var authResponse AuthResponse
+	err = json.Unmarshal(body, &authResponse)
+	if err != nil {
+		fmt.Println("Error parsing response body:", err)
+		return ""
+	}
+	return authResponse.AccessToken;
 }
 
 func geoGet(key string, address RequestBody )(float64, float64, error) {
@@ -77,8 +157,38 @@ func geoGet(key string, address RequestBody )(float64, float64, error) {
 	return 0, 0, fmt.Errorf("unexpected error")
 }
 
-func meteoGet() {
+func weatherGet( lat string, lng string, key string )(float64){
+	currentTime := time.Now().UTC()
+	formattedTime := currentTime.Format("2006-01-02T15:04:05.000-07:00")
 	
+	resp, err := http.Get("https://api.meteomatics.com/" + formattedTime + "/t_2m:F/" + lat + "," + lng + "/json?access_token=" + key )
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+	body, err1 := io.ReadAll(resp.Body)
+	if err1 != nil {
+		log.Fatalln(err)
+	}
+	readable := string(body)
+
+	var response Response
+
+	// Unmarshal the JSON data into the Response struct
+	err0 := json.Unmarshal([]byte(readable), &response)
+	if err0 != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return 0
+	}
+	val := 0.0
+	for _, data := range response.Data {
+		for _, coord := range data.Coordinates {
+			for _, date := range coord.Dates {
+				val = date.Value;
+			}
+		}
+	}
+	return val;
 }
 
 func init() {
@@ -103,12 +213,10 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// get api key from Meteomatics here
-
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		var body RequestBody
 		addCorsHeader(w)
-		if req.Method == "OPTIONS" {
+		if req.Method == "OPTIONS" || req.Method == "GET" {
 			w.WriteHeader(http.StatusOK)
     		return
 		}else{
@@ -120,9 +228,11 @@ func main() {
 			if err != nil {
 				log.Fatalf("Error getting coordinates: %v", err)
 			}
-			fmt.Printf("Latitude: %f, Longitude: %f\n", lat, lng)
-			// fetch meteomatics for weather data using the cooridnates
-			// add result to body and return
+			key := auth(envs["METEOMATICS_USERNAME"], envs["METEOMATICS_PASSWORD"])
+			latString := fmt.Sprintf("%f", lat)
+			lngString := fmt.Sprintf("%f", lng)
+			temp := weatherGet(latString, lngString, key)
+			body.Temp = temp;
 		}
 
 		json, err := json.Marshal(body)
@@ -136,5 +246,6 @@ func main() {
 	log.Println("Server is available at http://localhost:" + envs["PORT"])
 	log.Fatal(http.ListenAndServe(":" + envs["PORT"], nil))
 }
+
 
 

@@ -46,6 +46,23 @@ const styles = () => ({
     margin: '10px', 
     align: "center", 
     float: "center"
+  }, 
+  top: {
+    align: "top",
+    //textAlign: "center",
+    left: "0", 
+    justifyContent: "center", 
+    top: "0", 
+    margin: "20px", 
+    display: "block"
+  }, 
+  topText: {
+    textAlign: "center", 
+    margin: 0, 
+  }, 
+  div: {
+      justifyContent: "center", 
+      display: "block"
   }
 })
 
@@ -67,6 +84,7 @@ function Input({classes}){
         zipcode: "",
         result: null, 
         error: false, 
+        Temp: null
     })
     
     useEffect(() => {
@@ -105,7 +123,10 @@ function Input({classes}){
         })
         .then(response => response.json())
         .then(data => {
-            return data;
+            setState({
+                ...state, 
+                Temp: data.Temp
+            });
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -137,6 +158,7 @@ function Input({classes}){
     ]
 
     return (
+        <>
         <div  style={{height: `${windowSize[1] * .8 }px`, margin: "10px"}} >
             <button className={classes.collapse} onClick={() => setOpen(!open)}>|</button>
             {open && <div className={classes.close} style={{height: `${windowSize[1] * .8 }px`}}></div>}
@@ -152,7 +174,13 @@ function Input({classes}){
                     ))}
                     <button className={classes.go} onClick={handleClick} >Go</button> 
                 </div>}
+                
         </div>
+        <div  className={classes.top} style={{width: `${windowSize[0] * .7 }px`}} >
+            <h2 className={classes.topText} style={{margin: 0}}>Results</h2>
+            <h3>Temperature: {state.Temp}</h3>
+        </div>
+     </>
     )
 }
 

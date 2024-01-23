@@ -2,7 +2,6 @@ import React from 'react'
 import injectSheet, { ThemeProvider } from 'react-jss'
 import { useState, useEffect} from 'react'
 import StyledInput  from './inputs'
-import StyledResults from './Results'
 
 const styles = (theme) => ({    
   top: {
@@ -18,9 +17,14 @@ const styles = (theme) => ({
   },
   parent: {
     display: "flex", 
-    //justifyContent: "space-between"
+  },
+  div: {
+      justifyContent: "center", 
+      display: "block"
   }
 })
+
+
 
 function Comp({classes}){
 
@@ -48,9 +52,7 @@ function Comp({classes}){
             </div>
             <div className={classes.parent} >
                 <StyledInput /> 
-                <StyledResults />
             </div>
-    
         </>
     )
 }
