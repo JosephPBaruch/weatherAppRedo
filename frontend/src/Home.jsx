@@ -24,8 +24,6 @@ const styles = (theme) => ({
   }
 })
 
-
-
 function Comp({classes}){
 
     const [windowSize, setWindowSize] = useState([
